@@ -15,8 +15,8 @@ jobs:
       -  run: echo "tenantId - "${{ secrets.TENANTID }}
       
       -  run: echo "---Print Variables---"
-      -  run: echo "RESOURCE_GROUP - $RESOURCE_GROUP"
-      -  run: echo "TARGET_WORKSPACE_NAME - $TARGET_WORKSPACE_NAME"
+      -  run: echo "RESOURCE_GROUP - "${{vars.RESOURCE_GROUP}}
+      -  run: echo "TARGET_WORKSPACE_NAME - "${{vars.TARGET_WORKSPACE_NAME}}
         
       
           
