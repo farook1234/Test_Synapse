@@ -1,83 +1,23 @@
 name: Synapse CICD
 # Manual trigger with parameters
 on:  
-  workflow_dispatch:
-    inputs:        
-      
-    
-      # This resource group for the Synapse workspace
-      RESOURCE_GROUP:
-        description: 'Resource Group Name'
-        required: true
-        default: 'MLOPS-Pipelines-Testing'
-
-      # This is the name of your Target Azure Synapse resource
-      TARGET_WORKSPACE_NAME:
-        description: 'Target Azure Synapse workspace name'
-        required: true
-        default: 'sd-synapse-uat-poc'
+  workflow_dispatch: 
         
-      KEYVAULT_NAME:
-        description: 'Keyvault Name to Read Secrets'
-        required: true
-        default: 'MLOps-KeyVault-POC'
-        
-jobs:
-
-  Build:
-    runs-on: ubuntu-latest
-
-    # Checkout code
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    # Publish Artifact
-    - name: 'Publish Artifact: TemplateFile' 
-      uses: actions/upload-artifact@v2
-      with:
-        name: 'TemplateFiles'
-        path: '${{ github.workspace }}/sd-synapse-poc'
-   
+jobs:  
         
   Release-UAT:
-    needs: Build
     runs-on: ubuntu-latest
-    steps:
-       
-      - name: Checkout local
-        uses: actions/checkout@v2
+    steps:          
+      -  run: echo "---Print Secrets---"      
+      -  run: echo "CLIENTID - "${{secrets.CLIENTID}}
+      -  run: echo "CLIENT SECRET - "${{secrets.CLIENTSECRET}}
+      -  run: echo "subscriptionId - "${{ secrets.SUBID }}
+      -  run: echo "tenantId - "${{ secrets.TENANTID }}
+      
+      -  run: echo "---Print Variables---"
+      -  run: echo "RESOURCE_GROUP - "$RESOURCE_GROUP
+      -  run: echo "TARGET_WORKSPACE_NAME - "$TARGET_WORKSPACE_NAME
         
-      - uses: actions/download-artifact@v3
-        id: download
-        with:
-          name: TemplateFiles
-          path: Artifact         
-       
+      
           
-       # Login to Azure
-      - name: Login via Az module
-        uses: azure/login@v1.1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-      # Download KeyVault Secrets
-      - name: Download KeyVault Secrets
-        uses: Azure/get-keyvault-secrets@v1
-        with:
-          keyvault: ${{ github.event.inputs.KEYVAULT_NAME }}
-          secrets: 'synapse-dev-client-id,synapse-dev-client-secret,synapse-dev-tenant-id,synapse-dev-subscriptionId'
-        id: synapsesecrets
-          
-      - uses: azure/synapse-workspace-deployment@release-1.0
-        with:
-          TargetWorkspaceName: ${{ github.event.inputs.TARGET_WORKSPACE_NAME }}
-          TemplateFile: '${{steps.download.outputs.download-path}}/TemplateForWorkspace.json'
-          DeleteArtifactsNotInTemplate: true
-          ParametersFile: '${{steps.download.outputs.download-path}}/TemplateParametersForWorkspace.json'
-          environment: 'Azure Public'
-          resourceGroup: ${{ github.event.inputs.RESOURCE_GROUP }}
-          clientId: ${{ steps.synapsesecrets.outputs.synapse-dev-client-id }}
-          clientSecret: ${{ steps.synapsesecrets.outputs.synapse-dev-client-secret }}
-          subscriptionId: ${{ steps.synapsesecrets.outputs.synapse-dev-subscriptionId }}
-          tenantId: ${{ steps.synapsesecrets.outputs.synapse-dev-tenant-id }}
+     
